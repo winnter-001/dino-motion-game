@@ -94,11 +94,19 @@ screen = pygame.Surface((width, height))
 clock = pygame.time.Clock()
 
 # 音效
-pygame.mixer.init()
-pygame.mixer.music.load(os.path.join(BASE_PATH, "0317.mp3"))
-coin_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "coin.mp3"))
-heart_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "heart.mp3"))
-hurt_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "hurt.mp3"))
+if "STREAMLIT_SERVER_HEADLESS" not in os.environ:
+    # 本地環境初始化音效
+    pygame.mixer.init()
+    pygame.mixer.music.load(os.path.join(BASE_PATH, "0317.mp3"))
+    coin_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "coin.mp3"))
+    heart_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "heart.mp3"))
+    hurt_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "hurt.mp3"))
+else:
+    # 雲端環境，禁用音效
+    coin_sound = None
+    heart_sound = None
+    hurt_sound = None
+
 # 顏色設定
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -354,7 +362,8 @@ while running:
             if not invincible:
                 lives = max(0, lives - 1)
                 st.session_state.lives = lives
-                hurt_sound.play()
+                if hurt_sound:
+                    hurt_sound.play()
             obstacles.remove(obstacle)
             if lives == 0:
                 running = False
@@ -368,7 +377,9 @@ while running:
             coins += 1
             st.session_state.coins = coins
             coins_list.remove(coin)
-            coin_sound.play()
+            if coin_sound:
+                coin_sound.play()
+
 
     # 回回血
     for heart in hearts_list[:]:
@@ -378,7 +389,8 @@ while running:
             if lives < max_lives:
                 lives += 1
                 st.session_state.lives = lives
-                heart_sound.play()
+                if hurt_sound:
+                    hurt_sound.play()
             hearts_list.remove(heart)
 
     # === Boss 第一階段 ===
