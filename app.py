@@ -94,19 +94,20 @@ screen = pygame.Surface((width, height))
 clock = pygame.time.Clock()
 
 # 音效
-if "STREAMLIT_SERVER_HEADLESS" not in os.environ:
-    # 本地環境初始化音效
+try:
     pygame.mixer.init()
     pygame.mixer.music.load(os.path.join(BASE_PATH, "0317.mp3"))
     coin_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "coin.mp3"))
     heart_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "heart.mp3"))
     hurt_sound = pygame.mixer.Sound(os.path.join(BASE_PATH, "hurt.mp3"))
-else:
-    # 雲端環境，禁用音效
+    sound_available = True
+except pygame.error:
+    # 雲端環境，音效初始化失敗，禁用音效
     coin_sound = None
     heart_sound = None
     hurt_sound = None
-
+    sound_available = False
+    
 # 顏色設定
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -434,7 +435,8 @@ while running:
                 if not invincible:
                     lives = max(0, lives - 1)
                     st.session_state.lives = lives
-                    hurt_sound.play()
+                    if hurt_sound:
+                        hurt_sound.play()
                 boss_attacks.remove(attack)
                 if lives == 0:
                     running = False
